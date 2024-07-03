@@ -191,13 +191,11 @@ function sendContactEmail(formfields) {
           </p>
           <br>
                 <p><b>INFORMATION REQUEST SUMMARY</b></p>
-                <p><b>Activity:</b> ${formfields.activity}</p>
                 <p><b>Job:</b> ${formfields.job}</p>
                 <p><b>Company:</b> ${formfields.company}</p>
                 <p><b>Application:</b> ${formfields.application}</p>
                 <p><b>Country:</b> ${countryName}</p>
                 <p><b>E-mail:</b> ${formfields.email}</p>
-                <p><b>Phone number:</b> ${formfields.phone}</p>
                 <p><b>Item:</b> ${formfields.itemSelection}</p>
                 <p><b>Message:</b> ${formfields.message}</p>
                 <br>
