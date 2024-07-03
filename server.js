@@ -82,8 +82,6 @@ function sendSignupEmail(userData) {
                 <p><b>A new user has signed up</b></p>
                 <p><b>Name:</b> ${userData.name}</p>
                 <p><b>Email:</b> ${userData.email}</p>
-                <p><b>Activity:</b> ${userData.activity}</p>
-                <p><b>Type of application:</b> ${userData.application}</p>
                 <p><b>Receive communications:</b> ${userData.acceptcomm ? 'Yes' : 'No'}</p>
             </div>
         </body>
@@ -264,7 +262,7 @@ app.get('/validate-vat/:vat_number', async (req, res) => {
         
     } catch (error) {
         res.status(500).json({ error: 'A error occurred while validating VAT ' });
-        console.error('Errorr validating VAT number:', error);
+        console.error('Error validating VAT number:', error);
     }
 });
 
