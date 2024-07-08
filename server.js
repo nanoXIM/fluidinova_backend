@@ -43,7 +43,7 @@ function sendSignupEmail(userData) {
 
     const mailOptions = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com', 'gon.skater13@gmail.com'],
+        to: ['sales@fluidinova.com'],
 
         subject: 'New User Signup',
         html: `
@@ -165,7 +165,7 @@ function sendContactEmail(formfields) {
 
     const mailOptions2 = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com', formfields.email, 'gon.skater13@gmail.com'],
+        to: ['sales@fluidinova.com', formfields.email],
         subject: 'nanoXIM Information Request',
         html: `
         <!DOCTYPE html>
@@ -395,7 +395,7 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
 
     const mailOptions = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com', 'geral@fluidinova.com', customer.email, 'gon.skater13@gmail.com'],
+        to: ['sales@fluidinova.com', 'geral@fluidinova.com', customer.email],
 
         subject: `Your nanoXIM Order`,
         html: `
