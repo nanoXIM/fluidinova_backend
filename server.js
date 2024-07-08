@@ -8,30 +8,42 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
-app.post('/signup', (req, res) => {
-    // Process the signup data
-    const userData = req.body;
+app.post('/signup', async (req, res) => {
+    try {
+        const userData = req.body;
 
-    // Send email to project manager
-    sendSignupEmail(userData);
+        if (!userData.name || !userData.email) {
+            return res.status(400).json({ message: "Name and Email are required" });
+        }
 
-    res.status(200).json({ message: "Signup successful" });
+        const emailSent = await sendSignupEmail(userData);
+        
+        if (emailSent) {
+            return res.status(200).json({ message: "Signup successful" });
+        } else {
+            return res.status(500).json({ message: "Error sending signup email" });
+        }
+    } catch (error) {
+        console.error('Signup error:', error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 function sendSignupEmail(userData) {
-    const transporter = nodemailer.createTransport({
-        host: 'plesk01.redicloud.pt',
-        port: 465,
-        secure: true,
-        auth: {
-            user: 'forms@fluidinova.pt',
-            pass: process.env.emailpass
-        }
-    });
+    return new Promise((resolve, reject) => {
+        const transporter = nodemailer.createTransport({
+            host: 'plesk01.redicloud.pt',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'forms@fluidinova.pt',
+                pass: process.env.emailpass
+            }
+        });
 
     const mailOptions = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com'],
+        to: ['sales@fluidinova.com', 'gon.skater13@gmail.com'],
 
         subject: 'New User Signup',
         html: `
@@ -87,59 +99,73 @@ function sendSignupEmail(userData) {
         </body>
         </html>
     `
-    };
+};
 
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error('Error sending signup email:', error);
-        } else {
-            console.log('Signup email sent:', info.response);
-        }
-    });
+transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        console.error('Error sending signup email:', error);
+        return resolve(false);
+    } else {
+        console.log('Signup email sent:', info.response);
+        return resolve(true);
+    }
+});
+});
 }
 
 
-app.post('/contact', (req, res) => {
-    // Process the signup data
-    const formfields = req.body;
+app.post('/contact', async (req, res) => {
+    try {
+        const formfields = req.body;
 
-    // Send email to project manager
-    sendContactEmail(formfields);
+        if (!formfields.name || !formfields.email || !formfields.message) {
+            return res.status(400).json({ message: "Name, Email, and Message are required" });
+        }
 
-    res.status(200).json({ message: "Contact notification successful" });
+        const emailSent = await sendContactEmail(formfields);
+        
+        if (emailSent) {
+            return res.status(200).json({ message: "Contact notification successful" });
+        } else {
+            return res.status(500).json({ message: "Error sending contact email" });
+        }
+    } catch (error) {
+        console.error('Contact error:', error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 function sendContactEmail(formfields) {
-    const transporter = nodemailer.createTransport({
-        host: 'plesk01.redicloud.pt',
-        port: 465,
-        secure: true,
-        auth: {
-            user: 'forms@fluidinova.pt',
-            pass: process.env.emailpass
-        }
-    });
-
-    function getCountryName(countryCode) {
-        try {
-            const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
-            return regionNames.of(countryCode);
-        } catch (error) {
-            if (error instanceof RangeError) {
-                console.error('Invalid country code:', countryCode);
-            } else {
-                console.error('Error getting country name:', error);
+    return new Promise((resolve, reject) => {
+        const transporter = nodemailer.createTransport({
+            host: 'plesk01.redicloud.pt',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'forms@fluidinova.pt',
+                pass: process.env.emailpass
             }
-            // Return a default value or the original input
-            return countryCode;
-        }
-    }
+        });
 
-    const countryName = getCountryName(formfields.country);
+        function getCountryName(countryCode) {
+            try {
+                const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+                return regionNames.of(countryCode);
+            } catch (error) {
+                if (error instanceof RangeError) {
+                    console.error('Invalid country code:', countryCode);
+                } else {
+                    console.error('Error getting country name:', error);
+                }
+                return countryCode;
+            }
+        }
+
+        const countryName = getCountryName(formfields.country);
 
     const mailOptions2 = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com', formfields.email],
+        to: ['sales@fluidinova.com', formfields.email, 'gon.skater13@gmail.com'],
         subject: 'nanoXIM Information Request',
         html: `
         <!DOCTYPE html>
@@ -204,17 +230,19 @@ function sendContactEmail(formfields) {
         </body>
         </html>
     `
-    };
+};
 
-    transporter.sendMail(mailOptions2, (error, info) => {
-        if (error) {
-            console.error('Error sending contact email:', error);
-        } else {
-            console.log('contact email sent:', info.response);
-        }
-    });
+transporter.sendMail(mailOptions2, (error, info) => {
+    if (error) {
+        console.error('Error sending contact email:', error);
+        resolve(false);
+    } else {
+        console.log('Contact email sent:', info.response);
+        resolve(true);
+    }
+});
+});
 }
-
 
 app.post('/validate-eori', async (req, res) => {
     const { eoris } = req.body;
@@ -359,8 +387,6 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
     return acc + item.price_num * item.quantity;
   }, 0);
   
-    console.log("Cart Items:", cartItems); // Add this line to log cartItems
-
 
   // Generate order summary HTML
     const orderSummaryHTML = generateOrderSummaryHTML(cartItems, subtotal);
@@ -369,7 +395,7 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
 
     const mailOptions = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com', 'geral@fluidinova.com', customer.email],
+        to: ['sales@fluidinova.com', 'geral@fluidinova.com', customer.email, 'gon.skater13@gmail.com'],
 
         subject: `Your nanoXIM Order`,
         html: `
@@ -530,7 +556,8 @@ app.post('/create-checkout-session', async (req, res) => {
             res.json({ url: session.url });
         //console.log('Headers sent:', res.getHeaders());
 
-        await sendEmailAfterCheckout(customer, shpAd, bilAd, cartItems, tx, b2c, t);
+        //await sendEmailAfterCheckout(customer, shpAd, bilAd, cartItems, tx, b2c, t);
+        sendCheckoutEmail(customer, shpAd, bilAd, cartItems, process.env.year, tx, b2c, t)
 
         } catch (error) {
         //res.status(500).json({ error: 'An error occurred while creating checkout session' });
