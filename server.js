@@ -32,7 +32,7 @@ app.post('/signup', async (req, res) => {
 function sendSignupEmail(userData) {
     return new Promise((resolve, reject) => {
         const transporter = nodemailer.createTransport({
-            host: 'plesk01.widespace.pt',
+            host: 'plesk01.widecloud.pt',
             port: 465,
             secure: true,
             auth: {
@@ -138,7 +138,7 @@ app.post('/contact', async (req, res) => {
 function sendContactEmail(formfields) {
     return new Promise((resolve, reject) => {
         const transporter = nodemailer.createTransport({
-            host: 'plesk01.widespace.pt',
+            host: 'plesk01.widecloud.pt',
             port: 465,
             secure: true,
             auth: {
@@ -294,7 +294,7 @@ app.get('/validate-vat/:vat_number', async (req, res) => {
 
 function sendCheckoutEmail(customer, shippingAddress, billAddr, cartItems, orderid, info, b2c, t) {
     const transporter = nodemailer.createTransport({
-        host: 'plesk01.widespace.pt',
+        host: 'plesk01.widecloud.pt',
         port: 465,
         secure: true,
         auth: {
