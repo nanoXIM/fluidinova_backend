@@ -217,7 +217,6 @@ function sendContactEmail(formfields) {
           </p>
           <br>
                 <p><b>INFORMATION REQUEST SUMMARY</b></p>
-                <p><b>Job:</b> ${formfields.job}</p>
                 <p><b>Company:</b> ${formfields.company}</p>
                 <p><b>Application:</b> ${formfields.application}</p>
                 <p><b>Country:</b> ${countryName}</p>
@@ -468,7 +467,7 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
                 <strong>${b2c ? 'Full' : 'Company'} name: </strong>${customer.name}<br>
                 <strong>E-mail: </strong>${customer.email}<br>
                 <strong>Phone number: </strong>${customer.phone}<br>
-                <strong>Customer type: </strong>${b2c ? 'Consumer' : 'Company'}<br>
+                <strong>Customer type: </strong>${b2c ? 'Independent professionals' : 'Corporate professionals'}<br>
                 <strong>VAT: </strong>${customer.taxID}<br>
                 <strong>Region: </strong>${customer.reg}<br>
                 <strong><br>SHIPPING ADDRESS <br></strong>
