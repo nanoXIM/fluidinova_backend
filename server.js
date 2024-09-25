@@ -291,7 +291,7 @@ app.get('/validate-vat/:vat_number', async (req, res) => {
     }
 });
 
-function sendCheckoutEmail(customer, shippingAddress, billAddr, cartItems, orderid, info, b2c, t) {
+function sendCheckoutEmail(customer, shippingAddress, billAddr, cartItems, orderid, info, b2c, t, news) {
     const transporter = nodemailer.createTransport({
         host: 'plesk01.widecloud.pt',
         port: 465,
@@ -468,7 +468,8 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
                 <strong>E-mail: </strong>${customer.email}<br>
                 <strong>Phone number: </strong>${customer.phone}<br>
                 <strong>Customer type: </strong>${b2c ? 'Independent professionals' : 'Corporate professionals'}<br>
-                <strong>VAT: </strong>${customer.taxID}<br>
+                <strong>Wish to receive updates: </strong>${news ? 'Yes' : 'No'}<br>
+                <strong>TAX number: </strong>${customer.taxID}<br>
                 <strong>Region: </strong>${customer.reg}<br>
                 <strong><br>SHIPPING ADDRESS <br></strong>
                 <strong>Name: </strong>${shippingAddress.fullName}<br>
@@ -510,9 +511,9 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
                 allowed_countries: ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AG', 'AR', 'AM', 'AW', 'AU', 'AT', 'AZ', 'BS', 'BH', 'BD', 'BB', 'BE', 'BZ', 'BJ', 'BM', 'BT', 'BO', 'BQ', 'BA', 'BW', 'BR', 'IO', 'VG', 'BN', 'BG', 'BF', 'BI', 'CV', 'KH', 'CM', 'CA', 'KY', 'TD', 'CL', 'CN', 'CX', 'CC', 'CO', 'CK', 'CR', 'HR', 'CW', 'CY', 'CZ', 'CD', 'DK', 'DJ', 'DM', 'DO', 'EC', 'EG', 'SV', 'ER', 'EE', 'SZ', 'ET', 'FO', 'FJ', 'FI', 'FR', 'GF', 'PF', 'TF', 'GA', 'GM', 'GE', 'DE', 'GH', 'PI', 'GR', 'GL', 'GD', 'GP', 'GU', 'GT', 'GG', 'GY', 'HT', 'HN', 'HK', 'HU', 'IS', 'IN', 'ID', 'DQ', 'IE', 'IM', 'IL', 'IT', 'CI', 'JM', 'JP', 'JE', 'JO', 'KZ', 'KE', 'XK', 'KW', 'KG', 'LA', 'LV', 'LB', 'LS', 'LR', 'LY', 'LI', 'LT', 'LU', 'MO', 'MG', 'MW', 'MY', 'MV', 'ML', 'MT', 'MH', 'MQ', 'MR', 'MU', 'MX', 'FM', 'MD', 'MC', 'MN', 'ME', 'MS', 'MA', 'MZ', 'NA', 'NP', 'NL', 'NC', 'NZ', 'NI', 'NE', 'NG', 'NF', 'MK', 'MP', 'NO', 'OM', 'PK', 'PW', 'PS', 'PA', 'PG', 'PY', 'PE', 'PH', 'PN', 'PL', 'PT', 'PR', 'QA', 'CG', 'RE', 'RO', 'RW', 'BL', 'KN', 'LC', 'MF', 'VC', 'WS', 'SM', 'SA', 'SN', 'RS', 'SC', 'SG', 'SX', 'SK', 'SI', 'ZA', 'GS', 'KR', 'SS', 'ES', 'LK', 'SR', 'SJ', 'SE', 'CH', 'TQ', 'TZ', 'TH', 'TL', 'TG', 'TO', 'TT', 'TN', 'TR', 'TM', 'TC', 'VI', 'UG', 'AE', 'GB', 'US', 'UM', 'UY', 'UZ', 'VU', 'VA', 'VE', 'VN', 'WF', 'EH', 'ZM', 'ZW'],
               },*/
 
-              function sendEmailAfterCheckout(customer, shpAd, bilAd, cartItems, tx, b2c, t) {
+              function sendEmailAfterCheckout(customer, shpAd, bilAd, cartItems, tx, b2c, t, news) {
                 return new Promise((resolve, reject) => {
-                    sendCheckoutEmail(customer, shpAd, bilAd, cartItems, process.env.year, tx, b2c, t)
+                    sendCheckoutEmail(customer, shpAd, bilAd, cartItems, process.env.year, tx, b2c, t, news)
                         .then(() => {
                             console.log('Checkout email sent successfully');
                             resolve();
@@ -525,7 +526,7 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
             }
 
 app.post('/create-checkout-session', async (req, res) => {
-    const { customer, shpAd, bilAd, cartItems, tx, b2c, t} = req.body;
+    const { customer, shpAd, bilAd, cartItems, tx, b2c, t, news} = req.body;
 
     try {
         const session = await stripe.checkout.sessions.create({
@@ -553,17 +554,12 @@ app.post('/create-checkout-session', async (req, res) => {
             });
 
             res.json({ url: session.url });
-        //console.log('Headers sent:', res.getHeaders());
 
-        //await sendEmailAfterCheckout(customer, shpAd, bilAd, cartItems, tx, b2c, t);
-        sendCheckoutEmail(customer, shpAd, bilAd, cartItems, process.env.year, tx, b2c, t)
+        sendCheckoutEmail(customer, shpAd, bilAd, cartItems, process.env.year, tx, b2c, t, news)
 
         } catch (error) {
-        //res.status(500).json({ error: 'An error occurred while creating checkout session' });
-        //console.log('Headers sent:', res.getHeaders());
 
             console.error('Error creating the checkout session:', error);
-            //res.redirect('https://www.fluidinova.com/cancel');
         }
     });
 
