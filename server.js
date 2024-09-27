@@ -12,8 +12,8 @@ app.post('/signup', async (req, res) => {
     try {
         const userData = req.body;
 
-        if (!userData.name || !userData.email) {
-            return res.status(400).json({ message: "Name and Email are required" });
+        if (!userData.email) {
+            return res.status(400).json({ message: "Email is required" });
         }
 
         const emailSent = await sendSignupEmail(userData);
@@ -92,9 +92,7 @@ function sendSignupEmail(userData) {
             <div class="container">
             <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
                 <p><b>A new user has signed up</b></p>
-                <p><b>Name:</b> ${userData.name}</p>
                 <p><b>Email:</b> ${userData.email}</p>
-                <p><b>Receive communications:</b> ${userData.acceptcomm ? 'Yes' : 'No'}</p>
             </div>
         </body>
         </html>
