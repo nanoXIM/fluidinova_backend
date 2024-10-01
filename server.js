@@ -271,7 +271,52 @@ app.post('/validate-eori', async (req, res) => {
     }
 });
 
-app.get('/validate-vat/:vat_number', async (req, res) => {
+app.post('/api/check-vat', async (req, res) => {
+    const { countryCode, vatNumber, requesterMemberStateCode, requesterNumber } = req.body;
+  
+    // Make sure the required fields are provided
+    if (!countryCode || !vatNumber || !requesterMemberStateCode || !requesterNumber) {
+        return res.status(400).json({ code: 'ERR_MISSING_FIELDS' });
+    }
+  
+    try {
+      // Make a POST request to the EU VAT API
+      const response = await axios.post('https://ec.europa.eu/taxation_customs/vies/rest-api//check-vat-number', {
+        countryCode,
+        vatNumber,
+        requesterMemberStateCode,
+        requesterNumber
+      });
+  
+      // Send the response data back to the frontend
+      const data = response.data;
+
+    // If the VAT number is valid, return a success code
+    if (data.valid) {
+      res.status(200).json({ code: 'SUCCESS' });
+    } else {
+      // VAT number is invalid, send an invalid VAT code
+      res.status(400).json({ code: 'ERR_INVALID_VAT' });
+    }
+} catch (error) {
+    // Handle specific API errors
+    if (error.response && error.response.data) {
+      const errorData = error.response.data;
+
+      // Check if the action failed and there are specific error codes
+      if (errorData.actionSucceed === false && errorData.errorWrappers) {
+        const firstError = errorData.errorWrappers[0]; // Get the first error for simplicity
+        return res.status(400).json({ code: firstError.error });
+      }
+    }
+
+    // Fallback for unexpected errors
+    res.status(500).json({ code: 'ERR_INTERNAL_SERVER_ERROR' });
+  }
+});
+
+//old VAT API
+/*app.get('/validate-vat/:vat_number', async (req, res) => {
     const { vat_number } = req.params;
 
     try {
@@ -287,7 +332,7 @@ app.get('/validate-vat/:vat_number', async (req, res) => {
         res.status(500).json({ error: 'A error occurred while validating VAT ' });
         console.error('Error validating VAT number:', error);
     }
-});
+});*/
 
 function sendCheckoutEmail(customer, shippingAddress, billAddr, cartItems, orderid, info, b2c, t, news) {
     const transporter = nodemailer.createTransport({
