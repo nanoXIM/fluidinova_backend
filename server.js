@@ -503,7 +503,7 @@ const generateOrderSummaryHTML = (cartItems, subtotal) => {
             <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
                 <p>Hello ${customer.name}, we thank you for placing an order with FLUIDINOVA! </p>
                 <p>Once payment has been made and shipping has begun, we will send you an e-mail with shipping information.
-                The shipment is expected to be initiated in 5 business days.<br>
+                The shipment is expected to be initiated in 10 business days.<br>
                 The details of your order are as follows:</p>
                 <p><strong>Date: </strong>${datestr}<br>
                 <strong><br>BILLING INFORMATION <br></strong>
