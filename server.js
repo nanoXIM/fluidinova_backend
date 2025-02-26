@@ -113,6 +113,8 @@ transporter.sendMail(mailOptions, (error, info) => {
 
 
 app.post('/contact', async (req, res) => {
+    console.log('Email password:', process.env.EMAILPASS ? 'Loaded' : 'Not Loaded');
+
     try {
         const formfields = req.body;
 
