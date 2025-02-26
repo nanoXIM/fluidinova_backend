@@ -163,7 +163,7 @@ function sendContactEmail(formfields) {
 
     const mailOptions2 = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com', formfields.email],
+        to: ["ajcf10@gmail.com",formfields.email],
         subject: 'nanoXIM Information Request',
         html: `
         <!DOCTYPE html>
