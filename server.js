@@ -111,6 +111,8 @@ transporter.sendMail(mailOptions, (error, info) => {
 
 
 app.post('/contact', async (req, res) => {
+    console.log('Email password:', process.env.EMAILPASS ? 'Loaded' : 'Not Loaded');
+
     try {
         const formfields = req.body;
 
@@ -161,7 +163,7 @@ function sendContactEmail(formfields) {
 
     const mailOptions2 = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: [' sales@fluidinova.pt', formfields.email],
+        to: ['sales@fluidinova.pt', formfields.email],
         subject: 'nanoXIM Information Request',
         html: `
         <!DOCTYPE html>
