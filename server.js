@@ -121,9 +121,11 @@ app.post('/contact', async (req, res) => {
         }
 
         const emailSent = await sendContactEmail(formfields);
+
         
         if (emailSent) {
             return res.status(200).json({ message: "Contact notification successful" });
+
         } else {
             return res.status(500).json({ message: "Error sending contact email" });
         }
@@ -141,7 +143,7 @@ function sendContactEmail(formfields) {
             secure: true,
             auth: {
                 user: 'forms@fluidinova.pt',
-                pass: process.env.emailpass
+                pass: process.env.EMAILPASS
             }
         });
 
