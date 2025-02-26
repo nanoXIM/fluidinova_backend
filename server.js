@@ -4,6 +4,8 @@ const stripe = require('stripe')(process.env.API_KEY);
 const axios = require('axios').default;
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+require('dotenv').config();
+
 
 app.use(cors());
 app.use(express.json());
@@ -17,7 +19,7 @@ app.post('/signup', async (req, res) => {
         }
 
         const emailSent = await sendSignupEmail(userData);
-        
+           
         if (emailSent) {
             return res.status(200).json({ message: "Signup successful" });
         } else {
@@ -43,69 +45,65 @@ function sendSignupEmail(userData) {
 
     const mailOptions = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ['sales@fluidinova.com'],
+        to: [process.env.sales_email],
 
         subject: 'New User Signup',
-        html: `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=75%, initial-scale=1.0">
-            <title>Checkout</title>
-            <style>
-                body {
-                    background-color: #ffffff;
-                    font-family: 'DM Sans', sans-serif;
-                    color: #00416b;
-                    padding: 20px;
-                    word-wrap: break-word; /* or overflow-wrap: break-word; */
-
-                }
-                .container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    background-color: #f5fbfa;
-                    border-radius: 5px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                }
-                .logo {
-                    display: block;
-                    margin: 0 auto 40px; /* 40px margin bottom */
-                    max-width: 30%;
-                    height: auto;
-                }
-                p {
-                    margin: 0 0 10px;
-                    color: #00416b;
-                }
-                b {
-                    color: #00416b;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-            <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
-                <p><b>A new user has signed up</b></p>
-                <p><b>Email:</b> ${userData.email}</p>
-            </div>
-        </body>
-        </html>
-    `
+          html: `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=75%, initial-scale=1.0">
+                <title>Checkout</title>
+                <style>
+                    body {
+                        background-color: #ffffff;
+                        font-family: 'DM Sans', sans-serif;
+                        color: #00416b;
+                        padding: 20px;
+                        word-wrap: break-word;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background-color: #f5fbfa;
+                        border-radius: 5px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    }
+                    .logo {
+                        display: block;
+                        margin: 0 auto 40px;
+                        max-width: 30%;
+                        height: auto;
+                    }
+                    p {
+                        margin: 0 0 10px;
+                        color: #00416b;
+                    }
+                    b {
+                        color: #00416b;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
+                    <p><b>A new user has signed up</b></p>
+                    <p><b>Email:</b> ${userData.email}</p>
+                </div>
+            </body>
+            </html>
+            `
 };
 
 transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
         console.error('Error sending signup email:', error);
-        return resolve(false);
+         resolve(error);
     } else {
         console.log('Signup email sent:', info.response);
-        return resolve(true);
+         resolve(true);
     }
 });
 });
@@ -165,7 +163,7 @@ function sendContactEmail(formfields) {
 
     const mailOptions2 = {
         from: 'FLUIDINOVA <forms@fluidinova.pt>',
-        to: ["ajcf10@gmail.com",formfields.email],
+        to: ['sales@fluidinova.pt', formfields.email],
         subject: 'nanoXIM Information Request',
         html: `
         <!DOCTYPE html>
@@ -234,7 +232,7 @@ function sendContactEmail(formfields) {
 transporter.sendMail(mailOptions2, (error, info) => {
     if (error) {
         console.error('Error sending contact email:', error);
-        resolve(false);
+        resolve(error);
     } else {
         console.log('Contact email sent:', info.response);
         resolve(true);
@@ -245,6 +243,7 @@ transporter.sendMail(mailOptions2, (error, info) => {
 
 app.post('/validate-eori', async (req, res) => {
     const { eoris } = req.body;
+    console.log(eoris)
 
     try {
         const response = await axios.post('https://api.service.hmrc.gov.uk/customs/eori/lookup/check-multiple-eori', {
@@ -255,7 +254,8 @@ app.post('/validate-eori', async (req, res) => {
             }
         });
     
-        res.json(response.data);
+        // res.json(response.data);
+
         console.log('Received eoris:', eoris);
         if (!response.data || !response.data.status) {
             res.status(500).json({ error: 'An error occurred while validating EORI' });
