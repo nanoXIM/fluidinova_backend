@@ -10,6 +10,18 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
+const corsOptions = {
+  origin: ['https://www.fluidinova.com', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+// app.use(cors(corsOptions));
+
+// Also handle OPTIONS requests explicitly
+app.options('*', cors(corsOptions));
+
 app.post('/signup', async (req, res) => {
     try {
         const userData = req.body;
