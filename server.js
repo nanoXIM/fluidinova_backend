@@ -243,10 +243,41 @@ transporter.sendMail(mailOptions2, (error, info) => {
 });
 }
 
+// app.post('/validate-eori', async (req, res) => {
+//     const { eoris } = req.body;
+//     console.log(eoris)
+
+//     try {
+//         const response = await axios.post('https://api.service.hmrc.gov.uk/customs/eori/lookup/check-multiple-eori', {
+//             eoris: eoris
+//         }, {
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             }
+//         });
+    
+//         // res.json(response.data);
+
+//         console.log('Received eoris:', eoris);
+//         if (!response.data || !response.status) {
+//             res.status(500).json({ error: 'An error occurred while validating EORI' });
+//             throw new Error('Failed to validate EORI');
+//         } else if (response.data.status === 200) {
+//             res.status(200).json({ message: "EORI - Success!" });
+//         } else if (response.data.status === 400) {
+//             res.status(400).json({ message: "EORI - Invalid number, cannot purchase as business" });
+//         } else if (response.data.status === 600) {
+//             res.status(500).json({ message: "EORI - Server error. Please contact admin" });
+//         }
+//     } catch (error) {
+//         res.status(500).json({ error: 'An error occurred while validating EORI' });
+//         console.error('Error validating EORI:', error);
+//     }
+// });
+
 app.post('/validate-eori', async (req, res) => {
     const { eoris } = req.body;
-    console.log(eoris)
-
+  
     try {
         const response = await axios.post('https://api.service.hmrc.gov.uk/customs/eori/lookup/check-multiple-eori', {
             eoris: eoris
@@ -255,23 +286,21 @@ app.post('/validate-eori', async (req, res) => {
                 'Content-Type': 'application/json'
             }
         });
-    
-        // res.json(response.data);
 
-        console.log('Received eoris:', eoris);
-        if (!response.data || !response.data.status) {
-            res.status(500).json({ error: 'An error occurred while validating EORI' });
-            throw new Error('Failed to validate EORI');
-        } else if (response.data.status === 200) {
-            res.status(200).json({ message: "EORI - Success!" });
-        } else if (response.data.status === 400) {
-            res.status(400).json({ message: "EORI - Invalid number, cannot purchase as business" });
-        } else if (response.data.status === 600) {
-            res.status(500).json({ message: "EORI - Server error. Please contact admin" });
+        if (!response.data || !response.status) {
+
+            return res.status(500).json({ error: 'An error occurred while validating EORI' });
+            // throw new Error('Failed to validate EORI');
+        } else if (response.status === 200) {
+           return res.status(200).json({ message: "EORI - Success!" });
+        } else if (response.status === 400) {
+          return  res.status(400).json({ message: "EORI - Invalid number, cannot purchase as business" });
+        } else if (response.status === 600) {
+          return  res.status(500).json({ message: "EORI - Server error. Please contact admin" });
         }
     } catch (error) {
-        res.status(500).json({ error: 'An error occurred while validating EORI' });
         console.error('Error validating EORI:', error);
+        return res.status(500).json({ error: 'An error occurred while validating EORI' });
     }
 });
 
