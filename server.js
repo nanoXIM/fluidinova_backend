@@ -286,8 +286,6 @@ function sendContactEmail(formfields) {
 app.post('/validate-eori', async (req, res) => {
   const {eoris} = req.body;
 
-  console.log(eoris);
-
   try {
     const response = await axios.post(
       'https://api.service.hmrc.gov.uk/customs/eori/lookup/check-multiple-eori',
