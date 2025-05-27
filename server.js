@@ -428,10 +428,17 @@ app.post('/api/check-vat', async (req, res) => {
     const data = await makeVatRequest();
 
 
-    res.status(200).json({
-      code: 'SUCESS',
-      data: data,
-    });
+    if(data.valid) {
+      res.status(200).json({
+        code: 'SUCCESS',
+      });
+    } else {
+      res.status(200).json({
+        code: 'ERR_INVALID_VAT',
+      });
+    }
+
+    
   } catch (error) {
     res.status(500).json({
       code: 'ERR_INTERNAL_SERVER_ERROR',
