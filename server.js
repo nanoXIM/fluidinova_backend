@@ -305,7 +305,13 @@ app.post('/validate-eori', async (req, res) => {
         .json({error: 'An error occurred while validating EORI'});
       // throw new Error('Failed to validate EORI');
     } else if (response.status === 200) {
-      return res.status(200).json({message: response.data[0].valid ? 'EORI - Success!': "EORI not registred"});
+      return res
+        .status(200)
+        .json({
+          message: response.data[0].valid
+            ? 'EORI - Success!'
+            : 'EORI not registred',
+        });
     } else if (response.status === 400) {
       return res
         .status(400)
@@ -323,77 +329,117 @@ app.post('/validate-eori', async (req, res) => {
   }
 });
 
+const VIES_CONFIG = {
+  maxRetries: 5,
+  baseDelay: 2000, // VIES recommends at least 5 seconds between retries
+  maxDelay: 5000, // Maximum delay of 30 seconds
+  backoffMultiplier: 2,
+  timeout: 30000, // 30 second timeout as recommended by VIES
+};
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const calculateDelay = (attempt) => {
+  const delay =
+    VIES_CONFIG.baseDelay * VIES_CONFIG.backoffMultiplier ** attempt;
+  return Math.min(delay, VIES_CONFIG.maxDelay);
+};
+
 app.post('/api/check-vat', async (req, res) => {
+  console.log('req received', req.path);
+
   const {countryCode, vatNumber, requesterMemberStateCode, requesterNumber} =
     req.body;
 
-  // Make sure the required fields are provided
   if (
     !countryCode ||
     !vatNumber ||
     !requesterMemberStateCode ||
     !requesterNumber
   ) {
-    return res.status(400).json({code: 'ERR_MISSING_FIELDS'});
+    return res.status(400).json({
+      code: 'ERR_MISSING_FIELDS',
+      message:
+        'All fields are required: countryCode, vatNumber, requesterMemberStateCode, requesterNumber',
+    });
   }
+  const makeVatRequest = async (attempt = 0) => {
+    try {
+      console.log(
+        `Making VIES request (attempt ${attempt + 1}/${VIES_CONFIG.maxRetries})`
+      );
+
+      const response = await axios.post(
+        'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number',
+        {
+          countryCode: countryCode.toUpperCase(),
+          vatNumber: vatNumber.replace(/\s+/g, ''),
+          requesterMemberStateCode: requesterMemberStateCode.toUpperCase(),
+          requesterNumber: requesterNumber.replace(/\s+/g, ''),
+        },
+        {
+          timeout: VIES_CONFIG.timeout,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'VAT-Checker/1.0',
+            Accept: 'application/json',
+          },
+        }
+      );
+
+
+
+      if (
+        response.data.errorWrappers &&
+        response.data.errorWrappers.length > 0
+      ) {
+        console.log('vies returned error', response.data.errorWrappers);
+
+        const rateLimitErrors = [
+          'MS_MAX_CONCURRENT_REQ',
+          'GLOBAL_MAX_CONCURRENT_REQ',
+          'MS_MAX_CONCURRENT_REQ_TIME',
+        ];
+
+        const hasRateLimits = response.data.errorWrappers.some((err) =>
+          rateLimitErrors.includes(err.error)
+        );
+
+        if (hasRateLimits && attempt < VIES_CONFIG.maxRetries) {
+          const delayMs = calculateDelay(attempt);
+          console.log('delayMs', delayMs);
+          await delay(delayMs);
+          return makeVatRequest(attempt + 1);
+        }
+
+        return response.data;
+      }
+
+      return response.data
+    } catch (error) {
+      console.log('Error in make Vat Request:', error.message);
+
+      // Re-throw the error so it can be handled by the outer try/catch
+      throw error;
+    }
+  };
 
   try {
-    // Make a POST request to the EU VAT API
-    const response = await axios.post(
-      'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number',
-      {
-        countryCode,
-        vatNumber,
-        requesterMemberStateCode,
-        requesterNumber,
-      }
-    );
+    const data = await makeVatRequest();
 
-    // Send the response data back to the frontend
-    const data = response.data;
 
-    // If the VAT number is valid, return a success code
-    if (data.valid) {
-      res.status(200).json({code: 'SUCCESS'});
-    } else {
-      // VAT number is invalid, send an invalid VAT code
-      res.status(400).json({code: 'ERR_INVALID_VAT'});
-    }
+    res.status(200).json({
+      code: 'SUCESS',
+      data: data,
+    });
   } catch (error) {
-    // Handle specific API errors
-    if (error.response && error.response.data) {
-      const errorData = error.response.data;
-
-      // Check if the action failed and there are specific error codes
-      if (errorData.actionSucceed === false && errorData.errorWrappers) {
-        const firstError = errorData.errorWrappers[0]; // Get the first error for simplicity
-        return res.status(400).json({code: firstError.error});
-      }
-    }
-
-    // Fallback for unexpected errors
-    res.status(500).json({code: 'ERR_INTERNAL_SERVER_ERROR'});
+    res.status(500).json({
+      code: 'ERR_INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred'
+    });
   }
 });
 
-//old VAT API
-/*app.get('/validate-vat/:vat_number', async (req, res) => {
-    const { vat_number } = req.params;
-
-    try {
-        const apiKey = 'vat_live_YhSULynHRB5Nae6pJdDqk0IaEr3jUngdReMQxWnQ';
-        const response = await axios.get(`https://api.vatcheckapi.com/v2/check?vat_number=${vat_number}&apikey=${apiKey}`, {
-            headers: {
-                'X-Api-Key': apiKey
-            }
-        });
-        res.json(response.data);
-        
-    } catch (error) {
-        res.status(500).json({ error: 'A error occurred while validating VAT ' });
-        console.error('Error validating VAT number:', error);
-    }
-});*/
 
 function sendCheckoutEmail(
   customer,
