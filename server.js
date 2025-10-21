@@ -723,7 +723,7 @@ function sendEmailAfterCheckout(
 
 app.post('/create-checkout-session', async (req, res) => {
   const {customer, shpAd, bilAd, cartItems, tx, b2c, t, news} = req.body;
-
+  console.log(req.body)
   try {
     const session = await stripe.checkout.sessions.create({
       customer_email: customer.email,
