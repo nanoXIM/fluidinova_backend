@@ -150,7 +150,7 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAIL_TOKEN,
 });
 
-export async function sendContactEmail(formfields) {
+async function sendContactEmail(formfields) {
   try {
     console.log("FormFields", formfields);
 
