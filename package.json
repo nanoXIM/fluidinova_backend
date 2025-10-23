@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "author": "FLUIDINOVA",
-  "license": "",
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.6.7",
     "cors": "^2.8.5",
