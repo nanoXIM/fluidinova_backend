@@ -1,6 +1,7 @@
 {
   "name": "Fluidinova_backend",
   "version": "0.1",
+  "type": "commonjs",
   "description": "Fluidinova website backend for API endpoints",
   "main": "node --env-file=.env server.js",
   "scripts": {
