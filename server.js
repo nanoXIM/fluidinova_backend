@@ -4,7 +4,7 @@ const stripe = require('stripe')(process.env.API_KEY);
 const axios = require('axios').default;
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const { MailerSend } = require("mailersend");
+const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend");
 
 
 require('dotenv').config();
@@ -152,8 +152,6 @@ const mailerSend = new MailerSend({
 
 async function sendContactEmail(formfields) {
   try {
-    console.log("FormFields", formfields);
-
     // Helper to get country name
     function getCountryName(countryCode) {
       try {
@@ -171,14 +169,20 @@ async function sendContactEmail(formfields) {
 
     const countryName = getCountryName(formfields.country);
 
-    // Compose email
-    const emailParams = {
-      from: "FLUIDINOVA <forms@fluidinova.pt>",
-      to: [
-        { email: "nanoxim@fluidinova.com" },
-      ],
-      subject: "nanoXIM Information Request",
-      html: `
+    // Create sender and recipients using MailerSend classes
+    const sentFrom = new Sender("nanoxim@fluidinova.com", "FLUIDINOVA");
+    // const sentFrom = new Sender("forms@fluidinova.pt", "FLUIDINOVA");
+    
+    const recipients = [
+      new Recipient("nanoxim@fluidinova.com")
+    ];
+
+    // Create email params
+    const emailParams = new EmailParams()
+      .setFrom(sentFrom)
+      .setTo(recipients)
+      .setSubject("nanoXIM Information Request")
+      .setHtml(`
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -233,8 +237,7 @@ async function sendContactEmail(formfields) {
             </div>
         </body>
         </html>
-      `,
-    };
+      `);
 
     // Send email via MailerSend
     const response = await mailerSend.email.send(emailParams);
@@ -246,6 +249,8 @@ async function sendContactEmail(formfields) {
     return false;
   }
 }
+
+
 
 // function sendContactEmail(formfields) {
 
