@@ -1,0 +1,447 @@
+
+<script>
+ 	//MENU TOGGLE
+	$('.menu-button').click(function () {
+  	$('.menu').toggleClass('open');
+    $('.menu-button > :first-child').toggle();
+  });
+  
+  //Product data structure
+  const Product = {
+    create: function(name, weight, quantity, price, priceId, imageUrl, productUrl) {
+      return {
+        name: name,
+        weight: weight,
+        quantity: quantity,
+        price: price,
+        priceId: priceId,
+        imageUrl: imageUrl,
+        productUrl: productUrl
+      };
+    }
+  };
+ 
+  // Define the cart data structure
+  const cart = {
+    items: [], // Array to store cart items
+    totalPrice: 0, // Total price of all items in the cart
+    totalPriceTax: 0,
+    totalQuantity: 0,
+    addItem: function(product) {
+    // Check if the product is already in the cart
+    const existingProduct = this.items.find(item => item.name === product.name && item.weight === product.weight);
+    
+    if (existingProduct) {
+      // If the product already exists, increase its quantity by 1
+      existingProduct.quantity++;
+    } else {
+      // If the product does not exist, add it to the cart
+      this.items.push(product);
+    }
+    
+    // Recalculate total price and quantity
+    this.calculateTotalPrice();
+    this.calculateTotalQuantity();
+    this.updateCartQuantity(); // Update cart quantity text
+    this.saveCart();
+  },//fim additem
+    
+    removeItem: function(index) {
+      // Function to remove a product from the cart
+      this.items.splice(index, 1);
+      this.calculateTotalPrice();
+      this.calculateTotalQuantity();
+      this.updateCartQuantity();
+      this.saveCart();
+    },//fim removeitem
+    
+    calculateTotalPrice: function() {
+      // Function to calculate the total price of all items in the cart
+      let totalPrice = 0;
+      this.items.forEach(item => {
+        totalPrice += item.price * item.quantity;
+      });
+      this.totalPrice = totalPrice;
+      this.totalPriceTax = 1.23 * totalPrice;
+    },//fim calculateprice
+    
+    calculateTotalQuantity: function() {
+      // Function to calculate the total number of items in the cart
+      let totalQuantity = 0;
+      this.items.forEach(item => {
+        totalQuantity += item.quantity;
+      });
+      this.totalQuantity = totalQuantity;
+    },//fim caculatequantity
+    
+	updateCartQuantity: function() {
+      // Function to update the cart quantity text
+      const cartQuantityTextbox = document.getElementById('cart-quantity');
+      if (cartQuantityTextbox) {
+        cartQuantityTextbox.textContent = this.totalQuantity.toString();
+      }
+    },//fim updatecart
+    
+    saveCart: function() {
+    localStorage.setItem('cart', JSON.stringify(this.items));
+  	},//fim savecart
+    
+    clearCart: function() {
+    	this.items = []; // Clear the items array
+    	this.total = 0; // Reset the total price
+    	this.quantity = 0; // Reset the total quantity
+    	this.calculateTotalPrice();
+   		this.calculateTotalQuantity();
+    	this.updateCartQuantity(); // Update cart quantity text
+    	this.saveCart(); // Save the cleared cart to localStorage
+      	populateCart("cart-div", "cart-price", false);
+        const cartbtns = document.getElementById('cart-btns-div');
+		if (cart.totalQuantity == 0) cartbtns.style.display = 'none';
+    	else cartbtns.style.display = '';
+  		},
+    
+  // Function to load the cart from localStorage
+  	loadCart: function() {
+  	  const savedCart = localStorage.getItem('cart');
+    	if (savedCart) {
+      	this.items = JSON.parse(savedCart);
+      	this.calculateTotalPrice();
+   		this.calculateTotalQuantity();
+    	this.updateCartQuantity(); // Update cart quantity text
+    	}
+  	}//fim loadcart
+  };//fim 
+  
+function populateCart(divID, priceID, summary) {
+    const cartDiv = document.getElementById(divID);
+    const cartPriceField = document.getElementById(priceID);
+    
+    // Clear the cart div before populating it with new items
+    cartDiv.innerHTML = "";
+    
+    // Initialize total price
+    let totalPrice = 0;
+    let totalPriceTax = 0;
+  
+    // Iterate over cart items
+    cart.items.forEach((item, index) => {
+        // Create a cart product element
+        const cartProduct = document.createElement("div");
+        cartProduct.classList.add("cart-product");
+      
+      if (summary) {
+            cartProduct.classList.add("border-disable");
+        }
+
+        // Create product thumbnail
+     
+        const thumbnail = document.createElement("img");
+        thumbnail.classList.add("cart-product-thumbnail");
+        thumbnail.src = item.imageUrl;
+        cartProduct.appendChild(thumbnail);
+      
+
+        // Create product name
+        const name = document.createElement("a");
+        name.classList.add("cart-product-name");
+        name.textContent = item.name + " (" + item.weight + ")";
+      	name.href = item.productUrl;
+        cartProduct.appendChild(name);
+
+        // Create product quantity
+        const quantity = document.createElement("div");
+        quantity.classList.add("cart-product-quantity");
+        quantity.textContent = "Quantity: " + item.quantity + "\u00A0\u00A0|\u00A0\u00A0Price: €" + item.price + ".00";
+        cartProduct.appendChild(quantity);
+
+        // Create buttons container
+      if (!summary){
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.classList.add("cart-product-buttons");
+
+        // Create increase button
+        const increaseBtn = document.createElement("button");
+        increaseBtn.classList.add("cart-btn");
+        increaseBtn.textContent = "+";
+        increaseBtn.addEventListener("click", function() {
+            // Increase quantity logic
+            cart.items[index].quantity++;
+            populateCart(divID, priceID, summary);
+            cart.saveCart();
+            this.updateCartQuantity(); // Update cart quantity text
+
+        });
+        buttonsContainer.appendChild(increaseBtn);
+
+        // Create decrease button
+        const decreaseBtn = document.createElement("button");
+        decreaseBtn.classList.add("cart-btn");
+        decreaseBtn.textContent = "-";
+        decreaseBtn.addEventListener("click", function() {
+            // Decrease quantity logic
+            if (cart.items[index].quantity > 1) {
+                cart.items[index].quantity--;
+                populateCart(divID, priceID, summary);
+                cart.saveCart();
+            	this.updateCartQuantity(); // Update cart quantity text
+
+            }
+        });
+        buttonsContainer.appendChild(decreaseBtn);
+
+        // Create delete button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.classList.add("cart-btn");
+        deleteBtn.textContent = "🗑";
+        deleteBtn.addEventListener("click", function() {
+            // Delete product logic
+            cart.removeItem(index);
+            populateCart(divID, priceID, summary);
+            cart.saveCart();
+        });
+        buttonsContainer.appendChild(deleteBtn);
+
+        // Append buttons container to cart product
+        cartProduct.appendChild(buttonsContainer);
+      }//fim summary
+
+        // Append cart product to cart div
+        cartDiv.appendChild(cartProduct);
+
+        // Calculate and update total price
+        totalPrice += item.price * item.quantity;
+      totalPriceTax = totalPrice * 1.23;
+    });
+
+    // Update cart price field
+    cartPriceField.textContent = "€" + totalPrice.toFixed(2);
+}
+
+
+  // Function to handle cart button click event
+  function handleCartButtonClick() {
+    // Populate the cart
+    const summary = false;
+    const cartbtns = document.getElementById('cart-btns-div');
+    if (cart.totalQuantity == 0) cartbtns.style.display = 'none';
+    else cartbtns.style.display = '';
+    populateCart("cart-div", "cart-price", summary);
+    
+  }
+
+  // Wait for the DOM to be fully loaded
+  document.addEventListener("DOMContentLoaded", function() {
+    cart.loadCart();
+
+    // Find the cart button by its ID
+    const cartButton = document.getElementById("cart-btn");
+
+    // Add click event listener to the cart button
+    if (cartButton) { 
+      cartButton.addEventListener("click", handleCartButtonClick);
+      document.getElementById('clear-cart-btn').addEventListener('click', function() {
+      cart.clearCart(); // Call the clearCart function when the button is clicked 
+});
+    }
+  });
+  
+      function getCookieValue(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+  
+function updateLoginUI() {
+  console.log("updateUILogin")
+  const isLoggedIn = getCookieValue("wf_loggedin") === "true";
+  console.log("user is", isLoggedIn ? 'loggedIn' : 'loggedOut');
+  const loggedOutSection = document.getElementsByClassName("loggedout")[0];
+  const loggedInSection = document.getElementsByClassName("loggedin")[0];
+console.log(loggedOutSection)
+console.log(loggedInSection)
+  if (loggedOutSection && loggedInSection) {
+    loggedOutSection.style.display = isLoggedIn ? "none" : "block";
+    loggedInSection.style.display = isLoggedIn ? "block" : "none";
+  }
+}
+  
+  
+
+//  document.addEventListener("DOMContentLoaded", () => {
+  //setTimeout(updateLoginUI, 100);
+//});
+
+</script>
+<script>
+ $(document).ready(function () {
+
+
+   function setHasSeen() {
+    localStorage.setItem('hasSeenSmallPopup', true);
+  }
+
+function smallCookieShow() {
+  const hasSeen = localStorage.getItem('hasSeenSmallPopup');
+  const modal = $('.fi-cookie-modal-component');
+
+  if (!hasSeen) {
+    $('body').addClass('show-cookie-modal');
+    $('.cookie-button').hide(); 
+  } else {
+    $('body').removeClass('show-cookie-modal');
+    $('.cookie-button').show();
+  }
+}
+    smallCookieShow();
+
+      // Check if the user has already seen the popup
+      const hasSeenPopup = sessionStorage.getItem('hasSeenPopup');
+      // Check if the cookie is set to determine if the popup should be shown
+      //if (document.cookie.indexOf("popupClosed=true") === -1)
+      //*
+  
+      if (!hasSeenPopup) {
+        //$("#popup").show();
+        //$("#popup").style.display = 'block';
+      }
+  
+      // Close the popup when the close button is clicked
+      $('#close-popup').click(function () {
+        $('#popup').hide();
+        //$("#popup").style.display = 'none';
+  
+        sessionStorage.setItem('hasSeenPopup', true);
+        // Set a cookie to remember that the popup has been closed permanently
+        //document.cookie = "popupClosed=true; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+      });
+  
+      function showOverlayPopup() {
+        $('.overlay').show();
+        $('.popup-center').css('display', 'flex');
+        $('.popup').show();
+      }
+     
+      $('.fi-close-modal, .fi-allow-all, .fi-cookie-settings').on('click', function () {
+        setHasSeen();
+      });
+  
+      // botao de fechar e accept all fecham o pequeno
+      $('.fi-close-modal, .fi-allow-all, .ck-accept-all-btn, .ck-save-settings-btn' , ).on('click', function (e) {
+         $('input[type="checkbox"][name="always-active"]').prop('checked', true);
+        setCookie('cookie_always_active', true);
+        const hasSeenPopup = sessionStorage.getItem('hasSeenPopup');
+      if(e.currentTarget.id === "fi-allow") {
+         $('input[type="checkbox"][name="Performance"]').prop('checked', true);
+        $('input[type="checkbox"][name="Analytics"]').prop('checked', true);
+        $('.cookie-button').show();
+        setCookie('cookie_analytics', true);
+        setCookie('cookie_performance', true);
+      }
+      
+        setHasSeen();
+        $('.fi-cookie-modal-component').hide();
+        $('.cookie-button').show();
+        if (!hasSeenPopup) {
+          showOverlayPopup();
+        }
+      });
+  
+      $(".ck-accept-all-btn, .ck-save-settings-btn").on('click', function() {
+        console.log("logged")
+  
+      })
+      
+      
+  
+      // cookie setting abre o modal grande e fecha o pequeno
+      $('.fi-cookie-settings').on('click', () => {
+        setHasSeen();
+        $('.fi-cookie-modal-component').hide();
+        $('.ck-overlay').show();
+        $('body').css('overflow', 'hidden');
+      });
+  
+      // large cookies modal
+      // close button
+      $('.modal-large').click(() => {
+        setHasSeen();
+        $('.ck-overlay').hide();
+        $('body').css('overflow', 'visible');
+      });
+  
+      function setCookie(name, value, days = 365) {
+        console.log(value);
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+      }
+  
+      function getCookies() {
+        document.cookie.split('; ').map((c) => {
+          const [k, v] = c.split('=');
+          return { name: k, value: v };
+        });
+      }
+  
+      // accept all cookies
+      $('.ck-accept-all-btn').click(() => {
+        // const alwaysActive = $('input[type="checkbox"][name="always-active"]').prop('checked');
+        // const analytics = $('input[type="checkbox"][name="Analytics"]').prop('checked');
+        // const performance = $('input[type="checkbox"][name="Performance"]').prop('checked');
+        $('input[type="checkbox"][name="Performance"]').prop('checked', true);
+        $('input[type="checkbox"][name="Analytics"]').prop('checked', true);
+        $('input[type="checkbox"][name="always-active"]').prop('checked', true);
+        $('.cookie-button').show();
+        //    console.log(alwaysActive,analytics,performance)
+        setCookie('cookie_always_active', true);
+        setCookie('cookie_analytics', true);
+        setCookie('cookie_performance', true);
+        setHasSeen();
+        $('.ck-overlay').hide();
+        $('body').css('overflow', 'visible');
+      });
+  
+      // save settings
+      function saveCheckboxState() {
+        console.log('saveCheckboxState');
+              const alwaysActive = $('input[type="checkbox"][name="always-active"]').prop('checked');
+        const analytics = $('input[type="checkbox"][name="Analytics"]').prop('checked');
+        const performance = $('input[type="checkbox"][name="Performance"]').prop('checked');
+  setCookie('cookie_always_active', alwaysActive);
+        setCookie('cookie_analytics', analytics);
+        setCookie('cookie_performance', performance);
+     
+        
+      }
+  
+  
+      $('.ck-save-settings-btn').click(function () {
+        setHasSeen();
+        $('.ck-overlay').hide();
+        $('body').css('overflow', 'visible');
+  
+        saveCheckboxState();
+        $('.cookie-button').show();
+      });
+  
+      $('.cookie-button').on('click', function () {
+        $('.ck-overlay').show();
+        $('.cookie-button').hide();
+  
+        $('body').css('overflow', 'hidden');
+        $('input[name="always-active"]').prop(
+          'checked',
+          document.cookie.includes('cookie_always_active=true'),
+        );
+        $('input[name="Analytics"]').prop(
+          'checked',
+          document.cookie.includes('cookie_analytics=true'),
+        );
+        $('input[name="Performance"]').prop(
+          'checked',
+          document.cookie.includes('cookie_performance=true'),
+        );
+      });
+    });
+
+</script>
+
+

@@ -1,0 +1,74 @@
+<script>
+  function handleIntersection(entries, observer) {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const rect = entry.target.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        if (
+          centerX >= 0 &&
+          centerY >= 0 &&
+          centerX < window.innerWidth &&
+          centerY < window.innerHeight
+        ) {
+          const elementAtPoint = document.elementFromPoint(centerX, centerY);
+          if (elementAtPoint) {
+            elementAtPoint.click();
+            observer.unobserve(entry.target);
+          } else {
+            console.error('No element found at the calculated coordinates.');
+          }
+        } else {
+          console.error('Calculated coordinates are outside the bounds of the document.');
+        }
+      }
+    });
+  }
+
+
+
+  $(document).ready(function () {
+
+    const vid = document.getElementById('beidio-div');
+    // Check if the element exists
+    if (vid) {
+      // Create a new Intersection Observer
+      const observer = new IntersectionObserver(handleIntersection);
+      // Observe the target element
+      observer.observe(vid);
+    } else {
+      // Element not found, handle accordingly
+      console.error("Element with id 'beidio' not found.");
+    }
+
+  });
+
+  function isInViewport(element) {
+    var rect = element.getBoundingClientRect();
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+  }
+
+  // Function to handle video playback
+  function handleVideoPlayback() {
+    var video = document.getElementById('youtube-video');
+    var videoContainer = document.getElementById('video-container');
+
+    if (isInViewport(videoContainer) && !video.playing) {
+      video.src += '&autoplay=1'; // Append autoplay parameter to the video URL
+      video.playing = true; // Flag to prevent multiple playbacks
+    }
+  }
+
+  // Event listener for scroll event
+  window.addEventListener('scroll', function () {
+    handleVideoPlayback();
+  });
+
+  // Check video playback initially
+  handleVideoPlayback();
+</script>
