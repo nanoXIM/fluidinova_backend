@@ -144,6 +144,7 @@ app.post('/contact', async (req, res) => {
 });
 
 function sendContactEmail(formfields) {
+
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
       host: 'plesk01.widecloud.pt',
@@ -154,7 +155,7 @@ function sendContactEmail(formfields) {
         pass: process.env.EMAILPASS,
       },
     });
-
+    console.log("FormFields", formfields)
     function getCountryName(countryCode) {
       try {
         const regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
@@ -723,7 +724,7 @@ function sendEmailAfterCheckout(
 
 app.post('/create-checkout-session', async (req, res) => {
   const {customer, shpAd, bilAd, cartItems, tx, b2c, t, news} = req.body;
-  console.log(req.body)
+
   try {
     const session = await stripe.checkout.sessions.create({
       customer_email: customer.email,
