@@ -170,7 +170,8 @@ async function sendContactEmail(formfields) {
     const countryName = getCountryName(formfields.country);
 
     // Create sender and recipients using MailerSend classes
-    const sentFrom = new Sender("nanoxim@fluidinova.com", "FLUIDINOVA");
+       const sentFrom = new Sender("noreply@test-3m5jgro1lvdgdpyo.mlsender.net", "FLUIDINOVA");
+
     // const sentFrom = new Sender("forms@fluidinova.pt", "FLUIDINOVA");
     
     const recipients = [
@@ -181,6 +182,7 @@ async function sendContactEmail(formfields) {
     const emailParams = new EmailParams()
       .setFrom(sentFrom)
       .setTo(recipients)
+      .setReplyTo(new Recipient(formfields.email))
       .setSubject("nanoXIM Information Request")
       .setHtml(`
         <!DOCTYPE html>
@@ -238,10 +240,10 @@ async function sendContactEmail(formfields) {
         </body>
         </html>
       `);
-
+console.log("-------------",emailParams)
     // Send email via MailerSend
     const response = await mailerSend.email.send(emailParams);
-    console.log("Contact email sent:", response);
+    // console.log("Contact email sent:", response);
 
     return true;
   } catch (error) {
