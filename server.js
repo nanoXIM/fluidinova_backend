@@ -176,7 +176,6 @@ async function sendContactEmail(formfields) {
       from: "FLUIDINOVA <forms@fluidinova.pt>",
       to: [
         { email: "sales@fluidinova.pt" },
-        { email: formfields.email },
       ],
       subject: "nanoXIM Information Request",
       html: `
