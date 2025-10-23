@@ -1,0 +1,146 @@
+<!-- Finsweet Cookie Consent -->
+<!-- <script async src="https://cdn.jsdelivr.net/npm/@finsweet/cookie-consent@1/fs-cc.js" fs-cc-mode="opt-in"></script> -->
+<style>
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+.open {
+	height: auto;
+}
+
+    /* Grid container */
+    .cart-product {
+        display: grid;
+        grid-template-columns: auto auto auto; /* Three columns */
+        grid-template-rows: auto auto; /* Two rows */
+        gap: 2px; /* Gap between grid items */
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #9dd4ca;
+        border-radius: 15px;
+        margin: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Thumbnail */
+    .cart-product-thumbnail {
+        grid-column: 1; /* Occupies first column */
+        grid-row: span 2; /* Spans two rows */
+        width: 60px;
+        height: 60px;
+      	margin-right: 10px;
+    }
+
+    /* Name */
+    .cart-product-name {
+    	grid-column: 2 / span 2; /* Starts at column 2 and spans 2 columns */
+        grid-row: 1; /* First row */
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        line-height: 26px;
+        color: var(--dark-blue);
+        font-weight: bold;
+    }
+
+    /* Weight */
+    .cart-product-weight {
+        grid-column: 3; /* Third column */
+        grid-row: 1; /* First row */
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        line-height: 26px;
+        color: var(--dark-blue);
+        font-weight: bold;
+    }
+
+    /* Quantity */
+    .cart-product-quantity {
+        grid-column: 2; /* Second column */
+        grid-row: 2; /* Second row */
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        line-height: 26px;
+        color: var(--dark-blue);
+    }
+
+    /* Buttons */
+    .cart-product-buttons {
+        grid-column: 3; /* Third column */
+        grid-row: 2; /* Second row */
+        display: flex;
+        justify-content: flex-end; /* Align buttons to the right */
+    }
+
+    /* Cart buttons */
+    .cart-btn {
+        cursor: pointer;
+        padding: 5px 10px;
+        margin-left: 5px; /* Adjust margin between buttons */
+        border: 1px solid #9dd4ca;
+        border-radius: 15px;
+        background-color: transparent;
+        color: #9dd4ca;
+    }
+
+    .cart-btn:first-child {
+        margin-left: 0; /* Remove margin from the first button */
+    }
+
+    .cart-btn:hover {
+        background-color: #9dd4ca;
+        color: #fff;
+    }
+  .border-disable {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+  
+
+  .fi-cookie-modal-component {
+    display: none;
+  }
+
+  .show-cookie-modal .fi-cookie-modal-component {
+    display: block;
+  }
+  
+</style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+window.addEventListener('beforeunload', () => {
+  console.log("GOOD_BYE ! :)");
+  sessionStorage.removeItem('hasSeenPopup');
+});
+</script>
+
+<!-- Sygnal Attributes 5 | Memberships --> 
+<link rel="stylesheet" 
+  href="https://cdn.jsdelivr.net/gh/sygnaltech/webflow-util@5.6.0/dist/css/webflow-membership.css"
+  dev-href="http://127.0.0.1:4000/dist/css/webflow-membership.css"
+  devproxy-group="sa5"
+  > 
+<script defer 
+  src="https://cdn.jsdelivr.net/gh/sygnaltech/webflow-util@5.6.0/dist/nocode/webflow-membership.js" 
+  dev-src="http://127.0.0.1:4000/dist/nocode/webflow-membership.js"
+  devproxy-group="sa5"
+  ></script>
+
+<!-- Sygnal Attributes 5 | Memberships | Config -->
+<script>
+window.sa5 = window.sa5 || [];
+window.sa5.push(['getMembershipRoutingConfig', 
+  (config) => {
+    const lastVisited = localStorage.getItem("lastLoginPage")?.split(":")[2]
+   
+    config.routeAfterFirstLogin = '/u/youtube.com';
+    config.routeAfterLogin = '.';
+  
+    return config;
+  }]); 
+</script>
+
+   
