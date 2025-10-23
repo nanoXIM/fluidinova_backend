@@ -175,7 +175,7 @@ async function sendContactEmail(formfields) {
     const emailParams = {
       from: "FLUIDINOVA <forms@fluidinova.pt>",
       to: [
-        { email: "sales@fluidinova.pt" },
+        { email: "nanoxim@fluidinova.com" },
       ],
       subject: "nanoXIM Information Request",
       html: `
