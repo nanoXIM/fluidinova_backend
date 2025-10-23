@@ -4,6 +4,9 @@ const stripe = require('stripe')(process.env.API_KEY);
 const axios = require('axios').default;
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const { MailerSend } = require("mailersend");
+
+
 require('dotenv').config();
 
 app.use(cors());
@@ -143,28 +146,24 @@ app.post('/contact', async (req, res) => {
   }
 });
 
-function sendContactEmail(formfields) {
+const mailerSend = new MailerSend({
+  apiKey: process.env.MAIL_TOKEN,
+});
 
-  return new Promise((resolve, reject) => {
-    const transporter = nodemailer.createTransport({
-      host: 'plesk01.widecloud.pt',
-      port: 465,
-      secure: true,
-      auth: {
-        user: 'forms@fluidinova.pt',
-        pass: process.env.EMAILPASS,
-      },
-    });
-    console.log("FormFields", formfields)
+export async function sendContactEmail(formfields) {
+  try {
+    console.log("FormFields", formfields);
+
+    // Helper to get country name
     function getCountryName(countryCode) {
       try {
-        const regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
+        const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
         return regionNames.of(countryCode);
       } catch (error) {
         if (error instanceof RangeError) {
-          console.error('Invalid country code:', countryCode);
+          console.error("Invalid country code:", countryCode);
         } else {
-          console.error('Error getting country name:', error);
+          console.error("Error getting country name:", error);
         }
         return countryCode;
       }
@@ -172,14 +171,15 @@ function sendContactEmail(formfields) {
 
     const countryName = getCountryName(formfields.country);
 
-    const mailOptions2 = {
-      from: 'FLUIDINOVA <forms@fluidinova.pt>',
-      to: ['sales@fluidinova.pt', formfields.email],
-      subject: 'nanoXIM Information Request',
+    // Compose email
+    const emailParams = {
+      from: "FLUIDINOVA <forms@fluidinova.pt>",
+      to: [
+        { email: "sales@fluidinova.pt" },
+        { email: formfields.email },
+      ],
+      subject: "nanoXIM Information Request",
       html: `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -192,8 +192,7 @@ function sendContactEmail(formfields) {
                     font-family: 'DM Sans', sans-serif;
                     color: #00416b;
                     padding: 20px;
-                    word-wrap: break-word; /* or overflow-wrap: break-word; */
-
+                    word-wrap: break-word;
                 }
                 .container {
                     max-width: 600px;
@@ -205,7 +204,7 @@ function sendContactEmail(formfields) {
                 }
                 .logo {
                     display: block;
-                    margin: 0 auto 40px; /* 40px margin bottom */
+                    margin: 0 auto 40px;
                     max-width: 30%;
                     height: auto;
                 }
@@ -220,37 +219,143 @@ function sendContactEmail(formfields) {
         </head>
         <body>
             <div class="container">
-            <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
-            <p>${formfields.name},
-            thank you for your message! <br>We will contact you as soon as possible.
-          </p>
-          <br>
-                <p><b>INFORMATION REQUEST SUMMARY</b></p>
-                <p><b>Company:</b> ${formfields.company}</p>
-                <p><b>Application:</b> ${formfields.application}</p>
-                <p><b>Country:</b> ${countryName}</p>
-                <p><b>E-mail:</b> ${formfields.email}</p>
-                <p><b>Item:</b> ${formfields.itemSelection}</p>
-                <p><b>Message:</b> ${formfields.message}</p>
-                <br>
-                <p>Best Regards,<br>FLUIDINOVA</p>
+              <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
+              <p>${formfields.name}, thank you for your message! <br>We will contact you as soon as possible.</p>
+              <br>
+              <p><b>INFORMATION REQUEST SUMMARY</b></p>
+              <p><b>Company:</b> ${formfields.company}</p>
+              <p><b>Application:</b> ${formfields.application}</p>
+              <p><b>Country:</b> ${countryName}</p>
+              <p><b>E-mail:</b> ${formfields.email}</p>
+              <p><b>Item:</b> ${formfields.itemSelection}</p>
+              <p><b>Message:</b> ${formfields.message}</p>
+              <br>
+              <p>Best Regards,<br>FLUIDINOVA</p>
             </div>
         </body>
         </html>
-    `,
+      `,
     };
 
-    transporter.sendMail(mailOptions2, (error, info) => {
-      if (error) {
-        console.error('Error sending contact email:', error);
-        resolve(error);
-      } else {
-        console.log('Contact email sent:', info.response);
-        resolve(true);
-      }
-    });
-  });
+    // Send email via MailerSend
+    const response = await mailerSend.email.send(emailParams);
+    console.log("Contact email sent:", response);
+
+    return true;
+  } catch (error) {
+    console.error("Error sending contact email via MailerSend:", error);
+    return false;
+  }
 }
+
+// function sendContactEmail(formfields) {
+
+//   return new Promise((resolve, reject) => {
+//     const transporter = nodemailer.createTransport({
+//       host: 'plesk01.widecloud.pt',
+//       port: 465,
+//       secure: true,
+//       auth: {
+//         user: 'forms@fluidinova.pt',
+//         pass: process.env.EMAILPASS,
+//       },
+//     });
+//     console.log("FormFields", formfields)
+//     function getCountryName(countryCode) {
+//       try {
+//         const regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
+//         return regionNames.of(countryCode);
+//       } catch (error) {
+//         if (error instanceof RangeError) {
+//           console.error('Invalid country code:', countryCode);
+//         } else {
+//           console.error('Error getting country name:', error);
+//         }
+//         return countryCode;
+//       }
+//     }
+
+//     const countryName = getCountryName(formfields.country);
+
+//     const mailOptions2 = {
+//       from: 'FLUIDINOVA <forms@fluidinova.pt>',
+//       to: ['sales@fluidinova.pt', formfields.email],
+//       subject: 'nanoXIM Information Request',
+//       html: `
+//         <!DOCTYPE html>
+//         <html lang="en">
+//         <head>
+//         <!DOCTYPE html>
+//         <html lang="en">
+//         <head>
+//             <meta charset="UTF-8">
+//             <meta name="viewport" content="width=75%, initial-scale=1.0">
+//             <title>Checkout</title>
+//             <style>
+//                 body {
+//                     background-color: #ffffff;
+//                     font-family: 'DM Sans', sans-serif;
+//                     color: #00416b;
+//                     padding: 20px;
+//                     word-wrap: break-word; /* or overflow-wrap: break-word; */
+
+//                 }
+//                 .container {
+//                     max-width: 600px;
+//                     margin: 0 auto;
+//                     padding: 20px;
+//                     background-color: #f5fbfa;
+//                     border-radius: 5px;
+//                     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+//                 }
+//                 .logo {
+//                     display: block;
+//                     margin: 0 auto 40px; /* 40px margin bottom */
+//                     max-width: 30%;
+//                     height: auto;
+//                 }
+//                 p {
+//                     margin: 0 0 10px;
+//                     color: #00416b;
+//                 }
+//                 b {
+//                     color: #00416b;
+//                 }
+//             </style>
+//         </head>
+//         <body>
+//             <div class="container">
+//             <img class="logo" src="https://uploads-ssl.webflow.com/64a6f64c060e8fd934d2d554/659d95ae46d190afa40905e4_fluidinova-cor-azul.png" alt="Company Logo">
+//             <p>${formfields.name},
+//             thank you for your message! <br>We will contact you as soon as possible.
+//           </p>
+//           <br>
+//                 <p><b>INFORMATION REQUEST SUMMARY</b></p>
+//                 <p><b>Company:</b> ${formfields.company}</p>
+//                 <p><b>Application:</b> ${formfields.application}</p>
+//                 <p><b>Country:</b> ${countryName}</p>
+//                 <p><b>E-mail:</b> ${formfields.email}</p>
+//                 <p><b>Item:</b> ${formfields.itemSelection}</p>
+//                 <p><b>Message:</b> ${formfields.message}</p>
+//                 <br>
+//                 <p>Best Regards,<br>FLUIDINOVA</p>
+//             </div>
+//         </body>
+//         </html>
+//     `,
+//     };
+
+//     transporter.sendMail(mailOptions2, (error, info) => {
+//       if (error) {
+//         console.error('Error sending contact email:', error);
+//         resolve(error);
+//       } else {
+//         console.log('Contact email sent:', info.response);
+//         resolve(true);
+//       }
+//     });
+//   });
+// }
 
 // app.post('/validate-eori', async (req, res) => {
 //     const { eoris } = req.body;
