@@ -243,7 +243,7 @@ function sendContactEmail(formfields) {
     transporter.sendMail(mailOptions2, (error, info) => {
       if (error) {
         console.error('Error sending contact email:', error);
-        resolve(error);
+        return reject(error);
       } else {
         console.log('Contact email sent:', info.response);
         resolve(true);
