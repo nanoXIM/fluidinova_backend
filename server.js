@@ -145,6 +145,7 @@ app.post('/contact', async (req, res) => {
 });
 
 app.post("/webhooks/memberstack", express.raw({type:"*/*"}), (req, res) => {
+  console.log("REQUEST")
   const signature = req.headers["x-memberstack-signature"];
   const body = req.body;
 
