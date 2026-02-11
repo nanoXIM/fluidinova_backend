@@ -144,30 +144,6 @@ app.post('/contact', async (req, res) => {
   }
 });
 
-app.post("/webhooks/memberstack", express.raw({type:"*/*"}), (req, res) => {
-  console.log("REQUEST")
-  const signature = req.headers["x-memberstack-signature"];
-  const body = req.body;
-
-  // verify signature using your webhook secret
-  // const expected = crypto
-  //   .createHmac("sha256", process.env.MEMBERSTACK_SECRET)
-  //   .update(body)
-  //   .digest("hex");
-
-  // if (signature !== expected) {
-  //   return res.status(400).send("Invalid signature");
-  // }
-
-  const event = JSON.parse(body.toString());
-  console.log(event)
-
-  if (event.type === "member.created") {
-     // send your email here
-  }
-
-  res.sendStatus(200);
-});
 
 function sendContactEmail(formfields) {
   return new Promise((resolve, reject) => {
