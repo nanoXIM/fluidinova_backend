@@ -144,6 +144,30 @@ app.post('/contact', async (req, res) => {
   }
 });
 
+app.post("/webhooks/memberstack", express.raw({type:"*/*"}), (req, res) => {
+  const signature = req.headers["x-memberstack-signature"];
+  const body = req.body;
+
+  // verify signature using your webhook secret
+  // const expected = crypto
+  //   .createHmac("sha256", process.env.MEMBERSTACK_SECRET)
+  //   .update(body)
+  //   .digest("hex");
+
+  // if (signature !== expected) {
+  //   return res.status(400).send("Invalid signature");
+  // }
+
+  const event = JSON.parse(body.toString());
+  console.log(event)
+
+  if (event.type === "member.created") {
+     // send your email here
+  }
+
+  res.sendStatus(200);
+});
+
 function sendContactEmail(formfields) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
@@ -439,7 +463,7 @@ app.post('/api/check-vat', async (req, res) => {
       });
     }
 
-    
+
   } catch (error) {
     res.status(500).json({
       code: 'ERR_INTERNAL_SERVER_ERROR',
@@ -620,7 +644,7 @@ function sendCheckoutEmail(
                     font-family: 'DM Sans', sans-serif;
                     color: #ffffff;
                 }
-                
+
             </style>
         </head>
         <body>
