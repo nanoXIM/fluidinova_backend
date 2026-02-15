@@ -48,16 +48,20 @@ app.post('/webhooks/memberstack', express.json(), async (req, res) => {
 
   console.log('Webhook recebido:', event);
 
-  if (event.type === 'member.created') {
-    const member = event.data;
+  if (event.event === 'member.created') {
+    const email = event.payload?.auth?.email;
 
-    await sendSignupEmail({
-      email: member.email,
-    });
+    if (email) {
+      await sendSignupEmail({ email });
+      console.log('Email enviado para:', email);
+    } else {
+      console.error('Email não encontrado no payload');
+    }
   }
 
   res.status(200).send('ok');
 });
+
 
 function sendSignupEmail(userData) {
   return new Promise((resolve, reject) => {
