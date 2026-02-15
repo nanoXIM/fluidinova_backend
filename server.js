@@ -25,6 +25,7 @@ app.post('/signup', async (req, res) => {
   try {
     const userData = req.body;
 
+
     if (!userData.email) {
       return res.status(400).json({message: 'Email is required'});
     }
@@ -42,6 +43,22 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+app.post('/webhooks/memberstack', express.json(), async (req, res) => {
+  const event = req.body;
+
+  console.log('Webhook recebido:', event);
+
+  if (event.type === 'member.created') {
+    const member = event.data;
+
+    await sendSignupEmail({
+      email: member.email,
+    });
+  }
+
+  res.status(200).send('ok');
+});
+
 function sendSignupEmail(userData) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
@@ -56,7 +73,7 @@ function sendSignupEmail(userData) {
 
     const mailOptions = {
       from: 'FLUIDINOVA <forms@fluidinova.pt>',
-      to: [process.env.sales_email],
+      to: ["ajcf10@gmail.com"],
 
       subject: 'New User Signup',
       html: `
