@@ -45,14 +45,15 @@ app.post('/signup', async (req, res) => {
 
 app.post('/webhooks/memberstack', express.json(), async (req, res) => {
   const event = req.body;
-
+console.log(JSON.stringify(req.body, null, 2));
   console.log('Webhook recebido:', event);
 
   if (event.event === 'member.created') {
     const email = event.payload?.auth?.email;
 
     if (email) {
-      await sendSignupEmail({ email });
+      const r = await sendSignupEmail({ email });
+
       console.log('Email enviado para:', email);
     } else {
       console.error('Email não encontrado no payload');
@@ -77,7 +78,7 @@ function sendSignupEmail(userData) {
 
     const mailOptions = {
       from: 'FLUIDINOVA <forms@fluidinova.pt>',
-      to: [process.env.web_email,process.env.sales_email,process.env.custom_email],
+      to: [process.env.sales_email],
 
       subject: 'New User Signup',
       html: `
@@ -130,6 +131,7 @@ function sendSignupEmail(userData) {
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
+      console.log(mailOptions)
       if (error) {
         console.error('Error sending signup email:', error);
         resolve(error);
@@ -144,7 +146,7 @@ function sendSignupEmail(userData) {
 app.post('/contact', async (req, res) => {
   try {
     const formfields = req.body;
-    console.log(JSON.stringify(formfields))
+
 
     if (!formfields.name || !formfields.email || !formfields.message) {
       return res
